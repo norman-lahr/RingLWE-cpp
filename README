@@ -1,0 +1,220 @@
+COPYRIGHT
+=========
+
+    LWE-Polynomial 0.1 -- Learning-With-Errors-based Encryption System --
+    Copyright (C) 2011 Norman Lahr
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    Contact: norman@lahr.email
+    
+    Refer to the file LICENSE for the details of the GPL.
+
+
+LWE-Polynomial 0.1 -- Learning-With-Errors-based Encryption System --
+======================================================================
+
+LWE-Polynomial is an implementation of the polynomial ring-based LWE cryptosystem,
+developed by Richard Lindner and Chris Peikert in "Better Key Sizes (and Attacks) 
+for LWE-Based Encryption"(2010).
+The program uses the Number Theory Library (NTL 5.5.2) of Shoup from http://www.shoup.net.
+
+LWE-Polynomial enables key generation, encryption and decryption of arbitrary files.
+It is possible to use predefined cryptosystem modes (EASY, LOW, MEDIUM, HIGH) that
+are from the publication of Lindner and Peikert. It is also possible to choose 
+custom values for the parameters n, q and s.
+
+
+AUTHOR
+======
+
+Norman Lahr (norman@lahr.email)
+
+
+Requirements:
+=============
+
+  * NTL <url:http://www.shoup.net>.
+    
+  * A sufficiently standard conforming C++ compiler.
+
+SSR was developed and tested on 64-bit Linux system with NTL 5.5.2, GCC 4.4.3.
+
+
+Installation:
+=============
+
+In the most simple cases, all you need to do is:
+
+  1) unpack the distribution archive and make the resulting directory your
+     working directory.
+  2) change directory to 'src' and type 'make'
+  3) LWE-Polynomial is compiled to 'bin/'
+
+USAGE:
+=====
+Usage: LWE-Polynomial [OPTION] ...
+
+-e,  --enc [Filename]   Encrypts a file with name "Filename".
+                        The encrypted file takes postfix "*.enc" 
+                        by default or you can choose your own 
+                        filename with option "-o,  --out"
+
+-d,  --dec [Filename]   Decrypts a file with name "Filename".
+                        The filename of the decrypted file is either 
+                        the current filename without optional 
+                        postfix "*.enc" or you can choose 
+                        your own filename with option "-o,  --out"
+
+-g,  --genkey [Mode]   Generates a new pair of keys with 
+                        given cipher mode. The predefined
+                        modes are defined in the publication
+                        "Better key sizes (and attacks) for
+                        LWE-based encryption" of Lindner and Peikert.
+
+                        Mode     n    q     s
+                        ============================
+                        EASY    128  2053  6.77
+                        LOW     192  4093  8.87
+                        MEDIUM  256  4093  8.35
+                        HIGH    320  4093  8.00
+                        ----------------------------
+                        MAN     -n   -q    -s
+
+                        For all modes above you can choose an 
+                        alternative value for delta and optional for c if delta 
+                        is set by options "-r" and "-c". 
+                        With these options a new s will be determined. 
+
+                        In addition, you can select parameters n, q and s 
+                        manually by using options "-n", "-q", "-s".
+                        If you manually select "-n", "-q", "-c"
+                        and optionally "-r", parameter s is determined 
+                        by these values.
+
+-o,  --out [Filename]  Specifies the output filename.
+
+-k,  --key [Filename]  Specifies the key filename.
+
+-f, --fixseed          Sets seed of pseudo-random-number-generators 
+                       to a fixed value.
+
+-m, --fixpolymod       Sets polynomial modulus to f(x)=x^n+1 for all n.
+
+-r, --delta [value]    Sets per-symbol error probability.
+                       Default: delta = 0.01
+
+-c [value]             Sets parameter c.
+
+-n [value]             Sets parameter n.
+
+-l [value]             Sets message length l.
+                       Default: l = 128
+
+-q [value]             Sets modulus q.
+
+-s [value]             Sets parameter s.
+
+-p, --plainlength      Instructs the encrypt function to 
+                       write the length of the remaining bytes 
+                       of the last block as plaintext into the 
+                       ciphertext-file.
+
+-v,  --verbose         Prints actual parameters.
+
+-h,  --help            Prints this help.
+
+
+
+Examples calls:
+===============
+
+Key Generation:
+===============
+
+Choosing a predefined mode:
+---------------------------
+"./LWE-Polynomial -g MEDIUM -o key-MEDIUM" 
+
+Generates two files: "key-MEDIUM.private" and "key-MEDIUM.public"
+
+
+Choosing a predefined mode, selecting own delta:
+------------------------------------------------
+"./LWE-Polynomial -g MEDIUM --delta 0.001 -o key-MEDIUM"
+
+Generates two files: "key-MEDIUM.private" and "key-MEDIUM.public", and determines new value for parameter s.
+
+
+Choosing predefined mode, selecting own delta and parameter c:
+--------------------------------------------------------------
+"./LWE-Polynomial -g MEDIUM --delta 0.01 -c 1.31 -o key-MEDIUM"
+
+Generates two files: "key-MEDIUM.private" and "key-MEDIUM.public", and determines new value for parameter s.
+
+
+Choosing own value for n, q, l and s (You can exclude l, it is predefined l = 128):
+-----------------------------------------------------------------------------------
+"./LWE-Polynomial -g MAN -n 320 -q 4093 -l 64 -s 6.67 -o key-man"
+
+Generates two files: "key-man.private" and "key-man.public"
+
+Choosing own values for n, q, c, l and delta (s is determined by program):
+--------------------------------------------------------------------------
+"LWE-Polynomial -g MAN -n 320 -q 4093 -l 64 --delta 0.001 -c 1.22 -o key-man"
+
+Generates two files: "key-man.private" and "key-man.public",
+and sets all parameters.
+
+
+Encryption:
+===========
+
+Encrypting a file:
+------------------
+"LWE-Polynomial -e Test.txt -k key-MEDIUM.public -p"
+
+Writes the ciphertext of "Test.txt" into the file "Test.txt.enc" and write
+the number of the remaining bytes of the last plaintext block to the front 
+of the file "Test.txt.enc".
+
+Encrypting a file and storing the ciphertext in a custom chosen filename:
+-------------------------------------------------------------------------
+"LWE-Polynomial -e Test.txt -k key-MEDIUM.public -o Test.ciphertext"
+
+Writes the ciphertext of "Test.txt" into the file "Test.ciphertext".
+
+
+Decryption:
+===========
+Decrypting a file:
+------------------
+"LWE-Polynomial -d Test.txt.enc -k key-MEDIUM.private -p"
+
+Writes the plaintext of "Test.txt.enc" into the file "Test.txt".
+The number of the remaining bytes of the last plaintext block
+are located in the fron of the ciphertext file.
+
+Decrypting a file and storing the plaintext in a custom chosen filename:
+------------------------------------------------------------------------
+"LWE-Polynomial -d Test.txt.enc -k key-medium.private -o Test.txt.dec"
+
+Writes the plaintext of "Test.txt.enc" into the file "Test.txt.dec".
+
+Known issues:
+=============
+
+Version History:
+================
+- 0.1 First version
